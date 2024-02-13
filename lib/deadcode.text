@@ -1,0 +1,176 @@
+// Column(
+                //   children: [
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //     SizedBox(
+                //       height: 5,
+                //     ),
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //       children: [
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //         Stack(
+                //           children: [
+                //             CircleAvatar(
+                //               backgroundImage: getImage(),
+                //               radius: 50,
+                //             ),
+                //             Positioned(
+                //                 bottom: 10,
+                //                 right: 20,
+                //                 child: IconButton(
+                //                   onPressed: () {
+                //                     _pickImage();
+                //                   },
+                //                   icon: Icon(
+                //                     Icons.add_a_photo_rounded,
+                //                     size: 50,
+                //                   ),
+                //                 )),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //   ],
+                // ),
+
+
+                Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      Reference referenceRoot = FirebaseStorage.instance.ref();
+      Reference referenceDirImages = referenceRoot.child('ProductImages');
+      String uniqueName = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference referenceImageToUpload = referenceDirImages.child(uniqueName);
+
+      try {
+        await referenceImageToUpload.putFile(File(image.path));
+        uploadedImageUrl = await referenceImageToUpload.getDownloadURL();
+
+        print("Image uploaded successfully. URL: $uploadedImageUrl");
+
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
+    } else {
+      print("No image selected.");
+    }
+  }
+
+  ImageProvider getImage() {
+    if (uploadedImageUrl != null && uploadedImageUrl!.isNotEmpty) {
+      return NetworkImage(uploadedImageUrl!); //image in firebasestore
+      // ignore: unnecessary_null_comparison
+    } else if (_selectedImage != null) {
+      return FileImage(File(_selectedImage.path)); // Display selected image
+    } else {
+      return const AssetImage(
+          "assets/images/cancel.png"); //image to be shown default
+    }
+  }
